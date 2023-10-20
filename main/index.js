@@ -7,6 +7,12 @@ const port = 3000;
 
 app.get("/", function (req, res) {
     res.send("Get request recieved");
+    utils
+        .encrypt("test")
+        .then((result) => {
+            console.log(result);
+        })
+        .catch((err) => {});
 });
 
 app.listen(port, () => {
