@@ -1,7 +1,20 @@
-var hash;
+var dictHash = {};
+const bcrypt = require("bcrypt");
 
 function encrypt(data) {
-    console.log("testing module export");
+    bcrypt.hash(data, 7, function (err, hash) {
+        dictHash["data"] = hash;
+    });
 }
 
-module.exports = { encrypt };
+function compareData(data) {
+    bcrypt.compare(data, dictHash["data"], function (err, result) {
+        if (result) {
+            console.log("Correct");
+        } else {
+            console.log("Incorrect");
+        }
+    });
+}
+
+module.exports = { encrypt, compareData };
