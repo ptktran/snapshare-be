@@ -1,22 +1,23 @@
 {
-  "name": "snapshare-be",
-  "version": "1.0.0",
-  "description": "back end for snapshare",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ptktran/snapshare-be.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/ptktran/snapshare-be/issues"
-  },
-  "homepage": "https://github.com/ptktran/snapshare-be#readme",
-  "dependencies": {
-    "express": "^4.18.2"
-  }
+    "name": "snapshare-be",
+    "version": "1.0.0",
+    "description": "back end for snapshare",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node index.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ptktran/snapshare-be.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/ptktran/snapshare-be/issues"
+    },
+    "homepage": "https://github.com/ptktran/snapshare-be#readme",
+    "dependencies": {
+        "express": "^4.18.2"
+    }
 }
