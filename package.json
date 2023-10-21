@@ -18,7 +18,6 @@
     },
     "homepage": "https://github.com/ptktran/snapshare-be#readme",
     "dependencies": {
-        "bcrypt": "^5.1.1",
         "express": "^4.18.2",
         "postgres": "^3.4.0"
     }
