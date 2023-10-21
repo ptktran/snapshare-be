@@ -1,12 +1,15 @@
 const express = require("express");
 const app = express();
+
 const utils = require("../other/utils");
-const database = require("../other/database");
+const supa = require("../other/database.js");
 
 const port = 3000;
 
 app.get("/", async function (req, res) {
-    res.send("Get request recieved");
+    res.send("tes");
+    const data = await supa.supaClient.from("test").select();
+    console.log(data);
 });
 
 app.listen(port, () => {
