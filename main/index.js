@@ -36,6 +36,24 @@ app.post("/signUpUserInfo", async function (req, res) {
         user_bio: bio,
         profile_picture_url: pic,
     });
+    if (error == null) {
+        res.send({
+            error: null,
+            data: [],
+            count: null,
+            status: 200,
+            statusText: "OK",
+        });
+    } else {
+        console.log(error);
+        res.send({
+            error: null,
+            data: [error],
+            count: null,
+            status: 400,
+            statusText: "Error",
+        });
+    }
 });
 
 app.post("/getLikeAmount");
