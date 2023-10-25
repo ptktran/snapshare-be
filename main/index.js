@@ -28,6 +28,24 @@ app.post("/getUserInfo", async function (req, res) {
     res.send(data);
 });
 
+app.post("/signUpUserInfo", async function (req, res) {
+    var username = req.body["username"];
+    var email = req.body["email"];
+    var passwordHash = req.body["password_hash"];
+    var bio = req.body["bio"];
+    var pic = req.body["img_url"];
+
+    const { error } = await supa.supaClient.from("users").insert({
+        username: username,
+        email: email,
+        password_hash: passwordHash,
+        user_bio: bio,
+        profile_picture_url: pic,
+    });
+});
+
+app.post("/getLikeAmount");
+
 app.listen(port, () => {
     console.log(`Listing to port ${port}`);
 });
