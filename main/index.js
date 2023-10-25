@@ -1,5 +1,4 @@
 const express = require("express");
-const bodyParser = require("body-parser");
 const utils = require("../other/utils");
 const supa = require("../other/database.js");
 
@@ -22,6 +21,9 @@ app.post("/getUserInfo", async function (req, res) {
         .from("users")
         .select()
         .eq("username", username);
+    if (data[0] != null) {
+        data["data"][0]["password_hash"] = "";
+    }
 
     res.send(data);
 });
