@@ -12,6 +12,15 @@ app.get("/", async function (req, res) {
     console.log(data);
 });
 
+app.get("/GetUserInfo", async function (req, res) {
+    const data = await supa.supaClient
+        .from("users")
+        .select()
+        .eq("username", "John_larry");
+
+    res.send(data);
+});
+
 app.listen(port, () => {
     console.log(`Listing to port ${port}`);
 });
