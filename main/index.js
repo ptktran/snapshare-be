@@ -8,23 +8,17 @@ app.use(express.urlencoded({ extended: true }));
 
 const port = 3000;
 
-app.get("/", async function (req, res) {
-    res.send("tes");
-    const data = await supa.supaClient.from("test").select();
-    console.log(data);
-});
-
-app.post("/getUserInfo", async function (req, res) {
-    var username = req.body["username"];
+app.get("/getUserInfo/:username", async function (req, res) {
+    var username = req.params["username"];
 
     const data = await supa.supaClient
         .from("users")
         .select()
         .eq("username", username);
-    if (data[0] != null) {
+
+    if (data["data"][0] != null) {
         data["data"][0]["password_hash"] = "";
     }
-
     res.send(data);
 });
 
