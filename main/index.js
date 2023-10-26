@@ -56,7 +56,42 @@ app.post("/signUpUserInfo", async function (req, res) {
     }
 });
 
-app.post("/getLikeAmount");
+app.post("/updateUserInfo", async function (req, res) {
+    var username = req.body["username"];
+    var newUsername = req.body["newUsername"];
+    var email = req.body["email"];
+    var bio = req.body["bio"];
+    var pic = req.body["img_url"];
+
+    const { error } = await supa.supaClient
+        .from("users")
+        .update({
+            username: newUsername,
+            email: email,
+            user_bio: bio,
+            profile_picture_url: pic,
+        })
+        .eq("username", username);
+
+    if (error == null) {
+        res.send({
+            error: null,
+            data: [],
+            count: null,
+            status: 200,
+            statusText: "OK",
+        });
+    } else {
+        console.log(error);
+        res.send({
+            error: null,
+            data: [error],
+            count: null,
+            status: 400,
+            statusText: "Error",
+        });
+    }
+});
 
 app.listen(port, () => {
     console.log(`Listing to port ${port}`);
