@@ -154,6 +154,46 @@ app.get("/getTotalFollowers/:username", async function (req, res) {
     });
 });
 
+app.get("/getFollowerList/:username", async function (req, res) {
+    var username = req.params["username"];
+
+    const data = await supa.supaClient
+        .from("users")
+        .select("user_id")
+        .eq("username", username);
+
+    if (data["data"][0] == null) {
+        res.send({
+            error: null,
+            data: ["User does not exist"],
+            count: null,
+            status: 400,
+            statusText: "Error",
+        });
+        return;
+    }
+
+    var userId = data["data"][0]["user_id"];
+
+    const followingUsers = await supa.supaClient
+        .from("followers")
+        .select("follower_user_id")
+        .eq("user_id", userId);
+
+    var arr = [];
+
+    for (let i = 0; i < followingUsers["data"].length; i++) {
+        const followingUsername = await supa.supaClient
+            .from("users")
+            .select("username")
+            .eq("user_id", followingUsers["data"][i]["follower_user_id"]);
+
+        arr.push(followingUsername);
+    }
+
+    res.send(arr);
+});
+
 app.listen(port, () => {
     console.log(`Listing to port ${port}`);
 });
