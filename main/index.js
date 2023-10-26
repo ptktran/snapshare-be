@@ -120,6 +120,35 @@ app.get("/getUserPosts/:username", async function (req, res) {
     res.send(posts);
 });
 
+app.get("/getTotalFollowers/:username", async function (req, res) {
+    var username = req.params["username"];
+
+    const data = await supa.supaClient
+        .from("users")
+        .select("user_id")
+        .eq("username", username);
+
+    if (data["data"][0] == null) {
+        res.send({
+            error: null,
+            data: ["User does not exist"],
+            count: null,
+            status: 400,
+            statusText: "Error",
+        });
+        return;
+    }
+
+    var userId = data["data"][0]["user_id"];
+
+    const { count, error } = await supa.supaClient
+        .from("followers")
+        .select("user_id", { count: "exact", head: true })
+        .eq("user_id", userId);
+
+    res.send(count);
+});
+
 app.listen(port, () => {
     console.log(`Listing to port ${port}`);
 });
