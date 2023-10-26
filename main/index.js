@@ -145,7 +145,13 @@ app.get("/getTotalFollowers/:username", async function (req, res) {
         .from("followers")
         .select("*", { count: "exact", head: true })
         .eq("user_id", userId);
-    res.send(count.toString());
+    res.send({
+        error: null,
+        data: [count.toString()],
+        count: null,
+        status: 200,
+        statusText: "OK",
+    });
 });
 
 app.listen(port, () => {
