@@ -143,10 +143,9 @@ app.get("/getTotalFollowers/:username", async function (req, res) {
 
     const { count, error } = await supa.supaClient
         .from("followers")
-        .select("user_id", { count: "exact", head: true })
+        .select("*", { count: "exact", head: true })
         .eq("user_id", userId);
-
-    res.send(count);
+    res.send(count.toString());
 });
 
 app.listen(port, () => {
