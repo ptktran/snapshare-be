@@ -1,10 +1,12 @@
 const express = require("express");
+const cors = require("cors");
 const utils = require("../other/utils");
 const supa = require("../other/database.js");
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 
 const port = 3000;
 
