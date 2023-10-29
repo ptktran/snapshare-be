@@ -24,7 +24,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import { supabase } from '../supabaseClient.mjs';
 
-import { createUser, getUserById, getUsersByUsername, getUsersByEmail } from '../models/User.js'; // Adjust the path as needed
+import { createUser, getUserById, getUsersByUsername, getUsersByEmail } from '../models/User.js'; 
 
 
 
