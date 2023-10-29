@@ -18,7 +18,7 @@ import bcrypt from 'bcrypt';
 
 const router = express.Router();
 
-// Route for initiating a password change need old password
+// Route for initiating a password change (need old password)
 router.post('/initiate-change', async (req, res) => {
   const { email, oldPassword, newPassword } = req.body;
 
@@ -93,7 +93,7 @@ router.post('/initiate-password-reset', async (req, res) => {
   }
 });
 
-// Route to update password with email and new password after link is sent
+// Route to update password
 router.post('/update-password', async (req, res) => {
 
   const { email, newPassword } = req.body;
@@ -119,7 +119,7 @@ router.post('/update-password', async (req, res) => {
 });
 
 
-  /*// Update the user's password using Supabase Authentication table ?
+  /*// Update the user's password using Supabase ?
   try {
     const { data: updateData, error: updateSupabaseError } = await supabase.auth.updateUser({
       password: hashedNewPassword, // Use the hashed new password
