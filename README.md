@@ -6,4 +6,5 @@ To start server
 
 -   Open terminal
 -   cd into snapshare-be folder
+-   run command: npm install
 -   run command: npm start
