@@ -2,8 +2,10 @@ const express = require("express");
 const cors = require("cors");
 const utils = require("../other/utils");
 const supa = require("../other/database.js");
+const cors = require('cors')
 
 const app = express();
+app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
@@ -23,6 +25,25 @@ app.get("/getUserInfo/:username", async function (req, res) {
     }
     res.send(data);
 });
+
+app.get("/getAllPosts", async function (req, res) {
+  const data = await supa.supaClient
+    .from("posts")
+    .select('*')
+  
+  if (data["data"][0] === null || data === null) {
+    res.send({
+      error: null,
+      data: [],
+      count: null,
+      status: 400,
+      statusText: "Error",
+    });
+    return;
+  }
+
+  res.send(data);
+})
 
 app.post("/signUpUserInfo", async function (req, res) {
     var username = req.body["username"];
