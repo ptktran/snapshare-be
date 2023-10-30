@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Page Title</title>
+        <link rel="stylesheet" href="index.css" />
+    </head>
+    <body>
+        <div class="container">
+            <div>
+                <label>Username:</label><br />
+                <input type="text" id="username" name="username" /><br />
+
+                <input type="submit" onClick="run1()" value="Submit" />
+
+                <p id="result1">test</p>
+            </div>
+            <div>
+                <label>Username:</label><br />
+                <input type="text" id="username2" name="username2" /><br />
+                <label>Email:</label><br />
+                <input type="text" id="email2" name="email2" /><br />
+                <label>passwordHash:</label><br />
+                <input
+                    type="text"
+                    id="passwordHash2"
+                    name="passwordHash2"
+                /><br />
+                <label>bio:</label><br />
+                <input type="text" id="bio2" name="bio2" /><br />
+                <label>imgurl:</label><br />
+                <input type="text" id="imgurl2" name="imgurl2" /><br />
+
+                <input type="submit" onClick="run2()" value="Submit" />
+
+                <p id="result2"></p>
+            </div>
+        </div>
+
+        <script>
+            async function run1() {
+                var user = document.getElementById("username").value;
+
+                const response = await fetch(
+                    `http://localhost:3000/getUserInfo/${user}`
+                );
+                const data = await response.json();
+                document.getElementById("result1").innerText =
+                    JSON.stringify(data);
+            }
+
+            async function run2() {
+                var user = document.getElementById("username2").value;
+                var email = document.getElementById("email2").value;
+                var passwordHash =
+                    document.getElementById("passwordHash2").value;
+                var bio = document.getElementById("bio2").value;
+                var picUrl = document.getElementById("imgurl2").value;
+
+                const response = await fetch(
+                    `http://localhost:3000/signUpUserInfo/`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            username: user,
+                            email: email,
+                            password_hash: passwordHash,
+                            bio: bio,
+                            img_url: picUrl,
+                        }),
+                    }
+                );
+                const data = await response.json();
+
+                document.getElementById("result2").innerText =
+                    JSON.stringify(data);
+            }
+        </script>
+    </body>
+</html>

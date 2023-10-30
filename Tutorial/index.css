@@ -1,0 +1,10 @@
+.container {
+    display: flex; /* or inline-flex */
+    flex-grow: 4;
+    flex-wrap: wrap;
+}
+
+.containerContainer {
+    display: flex;
+    flex-direction: column;
+}

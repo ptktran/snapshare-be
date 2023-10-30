@@ -1,10 +1,14 @@
 const express = require("express");
+const cors = require("cors");
 const utils = require("../other/utils");
 const supa = require("../other/database.js");
+const cors = require('cors')
 
 const app = express();
+app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 
 const port = 3000;
 
@@ -21,6 +25,25 @@ app.get("/getUserInfo/:username", async function (req, res) {
     }
     res.send(data);
 });
+
+app.get("/getAllPosts", async function (req, res) {
+  const data = await supa.supaClient
+    .from("posts")
+    .select('*')
+  
+  if (data["data"][0] === null || data === null) {
+    res.send({
+      error: null,
+      data: [],
+      count: null,
+      status: 400,
+      statusText: "Error",
+    });
+    return;
+  }
+
+  res.send(data);
+})
 
 app.post("/signUpUserInfo", async function (req, res) {
     var username = req.body["username"];
@@ -143,10 +166,55 @@ app.get("/getTotalFollowers/:username", async function (req, res) {
 
     const { count, error } = await supa.supaClient
         .from("followers")
-        .select("user_id", { count: "exact", head: true })
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId);
+    res.send({
+        error: null,
+        data: [count.toString()],
+        count: null,
+        status: 200,
+        statusText: "OK",
+    });
+});
+
+app.get("/getFollowerList/:username", async function (req, res) {
+    var username = req.params["username"];
+
+    const data = await supa.supaClient
+        .from("users")
+        .select("user_id")
+        .eq("username", username);
+
+    if (data["data"][0] == null) {
+        res.send({
+            error: null,
+            data: ["User does not exist"],
+            count: null,
+            status: 400,
+            statusText: "Error",
+        });
+        return;
+    }
+
+    var userId = data["data"][0]["user_id"];
+
+    const followingUsers = await supa.supaClient
+        .from("followers")
+        .select("follower_user_id")
         .eq("user_id", userId);
 
-    res.send(count);
+    var arr = [];
+
+    for (let i = 0; i < followingUsers["data"].length; i++) {
+        const followingUsername = await supa.supaClient
+            .from("users")
+            .select("username")
+            .eq("user_id", followingUsers["data"][i]["follower_user_id"]);
+
+        arr.push(followingUsername);
+    }
+
+    res.send(arr);
 });
 
 app.listen(port, () => {
