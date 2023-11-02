@@ -1,11 +1,9 @@
 const express = require("express");
-const cors = require("cors");
 const utils = require("../other/utils");
 const supa = require("../other/database.js");
 const cors = require('cors')
 
 const app = express();
-app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
@@ -13,18 +11,50 @@ app.use(cors());
 const port = 3000;
 
 app.get("/getUserInfo/:username", async function (req, res) {
-    var username = req.params["username"];
+  var username = req.params["username"];
 
-    const data = await supa.supaClient
-        .from("users")
-        .select()
-        .eq("username", username);
-
-    if (data["data"][0] != null) {
-        data["data"][0]["password_hash"] = "";
-    }
-    res.send(data);
+  const data = await supa.supaClient
+    .from("users123")
+    .select()
+    .eq("username", username);
+    
+  if (data.data.length === 0 || data === null) {
+    res.status(404).json({
+      status: 404,
+      error: "Resource not found",
+      data: [],
+    });
+  } else {
+    res.status(200).json({
+      status: 200,
+      statusText: "OK",
+      data: data.data,
+    });
+  }
 });
+
+app.get("/getUsername/:userId", async function (req, res) {
+  var userId = req.params["userId"]
+
+  const data = await supa.supaClient
+    .from("users123")
+    .select("username")
+    .eq("user_id", userId)
+
+  if (data.data.length === 0 || data === null) {
+    res.status(404).json({
+      status: 404,
+      error: "User not found",
+      data: [],
+    });
+  } else {
+    res.status(200).json({
+      status: 200,
+      statusText: "OK",
+      data: data.data,
+    });
+  }
+})
 
 app.get("/getAllPosts", async function (req, res) {
   const data = await supa.supaClient
@@ -43,6 +73,29 @@ app.get("/getAllPosts", async function (req, res) {
   }
 
   res.send(data);
+})
+
+app.get("/getPost/:postId", async function (req, res) {
+  const postId = req.params["postId"]
+
+  const data = await supa.supaClient
+    .from("posts")
+    .select()
+    .eq("post_id", postId)
+  
+  if (data.data.length === 0 || data === null) {
+    res.status(404).json({
+      status: 404,
+      error: "Post not found",
+      data: [],
+    });
+  } else {
+    res.status(200).json({
+      status: 200,
+      statusText: "OK",
+      data: data.data,
+    });
+  }
 })
 
 app.post("/signUpUserInfo", async function (req, res) {
@@ -119,19 +172,17 @@ app.get("/getUserPosts/:username", async function (req, res) {
     var username = req.params["username"];
 
     const data = await supa.supaClient
-        .from("users")
-        .select("user_id")
-        .eq("username", username);
+      .from("users123")
+      .select("user_id")
+      .eq("username", username);
 
-    if (data["data"][0] == null) {
-        res.send({
-            error: null,
-            data: [],
-            count: null,
-            status: 400,
-            statusText: "Error",
-        });
-        return;
+    if (data.data.length === 0) {
+      res.status(404).json({
+        status: 404,
+        error: "Resource not found",
+        data: [],
+      });
+      return;
     }
 
     var userId = data["data"][0]["user_id"];
@@ -140,7 +191,18 @@ app.get("/getUserPosts/:username", async function (req, res) {
         .from("posts")
         .select()
         .eq("user_id", userId);
-    res.send(posts);
+    if (posts.data.length === 0) {
+      res.status(400).json({
+        status: 400,
+        statusText: "No posts yet"
+      })
+    } else {
+      res.status(200).json({
+        status: 200,
+        statusText: "OK",
+        data: posts.data,
+      });
+    }
 });
 
 app.get("/getTotalFollowers/:username", async function (req, res) {
