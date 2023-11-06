@@ -18,7 +18,7 @@ app.get("/getUserInfo/:username", async function (req, res) {
     .select()
     .eq("username", username);
     
-  if (data.data.length === 0 || data === null) {
+  if (data === null || data.data === null || data.data.length === 0) {
     res.status(404).json({
       status: 404,
       error: "Resource not found",
@@ -41,7 +41,7 @@ app.get("/getUsername/:userId", async function (req, res) {
     .select("username")
     .eq("user_id", userId)
 
-  if (data.data.length === 0 || data === null) {
+  if (data === null || data.data.length === 0) {
     res.status(404).json({
       status: 404,
       error: "User not found",
@@ -83,7 +83,7 @@ app.get("/getPost/:postId", async function (req, res) {
     .select()
     .eq("post_id", postId)
   
-  if (data.data.length === 0 || data === null) {
+  if (data === null || data.data === null || data.data.length === 0) {
     res.status(404).json({
       status: 404,
       error: "Post not found",
@@ -176,7 +176,7 @@ app.get("/getUserPosts/:username", async function (req, res) {
       .select("user_id")
       .eq("username", username);
 
-    if (data.data.length === 0) {
+    if (data === null || data.data === null || data.data.length === 0) {
       res.status(404).json({
         status: 404,
         error: "Resource not found",
@@ -191,7 +191,7 @@ app.get("/getUserPosts/:username", async function (req, res) {
         .from("posts")
         .select()
         .eq("user_id", userId);
-    if (posts.data.length === 0) {
+    if (posts.data === null || posts.data.length === 0) {
       res.status(400).json({
         status: 400,
         statusText: "No posts yet"
