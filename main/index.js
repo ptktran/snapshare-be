@@ -1,7 +1,7 @@
 const express = require("express");
 const utils = require("../other/utils");
 const supa = require("../other/database.js");
-const cors = require('cors')
+const cors = require("cors");
 
 const app = express();
 app.use(express.json());
@@ -11,92 +11,90 @@ app.use(cors());
 const port = 3000;
 
 app.get("/getUserInfo/:username", async function (req, res) {
-  var username = req.params["username"];
+    var username = req.params["username"];
 
-  const data = await supa.supaClient
-    .from("users123")
-    .select()
-    .eq("username", username);
-    
-  if (data.data.length === 0 || data === null) {
-    res.status(404).json({
-      status: 404,
-      error: "Resource not found",
-      data: [],
-    });
-  } else {
-    res.status(200).json({
-      status: 200,
-      statusText: "OK",
-      data: data.data,
-    });
-  }
+    const data = await supa.supaClient
+        .from("users123")
+        .select()
+        .eq("username", username);
+
+    if (data.data.length === 0 || data === null) {
+        res.status(404).json({
+            status: 404,
+            error: "Resource not found",
+            data: [],
+        });
+    } else {
+        res.status(200).json({
+            status: 200,
+            statusText: "OK",
+            data: data.data,
+        });
+    }
 });
 
 app.get("/getUsername/:userId", async function (req, res) {
-  var userId = req.params["userId"]
+    var userId = req.params["userId"];
 
-  const data = await supa.supaClient
-    .from("users123")
-    .select("username")
-    .eq("user_id", userId)
+    const data = await supa.supaClient
+        .from("users123")
+        .select("username")
+        .eq("user_id", userId);
 
-  if (data.data.length === 0 || data === null) {
-    res.status(404).json({
-      status: 404,
-      error: "User not found",
-      data: [],
-    });
-  } else {
-    res.status(200).json({
-      status: 200,
-      statusText: "OK",
-      data: data.data,
-    });
-  }
-})
+    if (data === null || data.data.length === 0) {
+        res.status(404).json({
+            status: 404,
+            error: "User not found",
+            data: [],
+        });
+    } else {
+        res.status(200).json({
+            status: 200,
+            statusText: "OK",
+            data: data.data,
+        });
+    }
+});
 
 app.get("/getAllPosts", async function (req, res) {
-  const data = await supa.supaClient
-    .from("posts")
-    .select('*')
-  
-  if (data["data"][0] === null || data === null) {
-    res.send({
-      error: null,
-      data: [],
-      count: null,
-      status: 400,
-      statusText: "Error",
-    });
-    return;
-  }
+    const data = await supa.supaClient.from("posts").select("*");
 
-  res.send(data);
-})
+    if (data["data"][0] === null || data === null) {
+        res.send({
+            error: null,
+            data: [],
+            count: null,
+            status: 400,
+            statusText: "Error",
+        });
+        return;
+    }
+
+    res.send(data);
+});
 
 app.get("/getPost/:postId", async function (req, res) {
-  const postId = req.params["postId"]
+    const postId = req.params["postId"];
 
-  const data = await supa.supaClient
-    .from("posts")
-    .select()
-    .eq("post_id", postId)
-  
-  if (data.data.length === 0 || data === null) {
-    res.status(404).json({
-      status: 404,
-      error: "Post not found",
-      data: [],
-    });
-  } else {
-    res.status(200).json({
-      status: 200,
-      statusText: "OK",
-      data: data.data,
-    });
-  }
-})
+    const data = await supa.supaClient
+        .from("posts")
+        .select()
+        .eq("post_id", postId);
+
+    if (data.data.length === 0 || data === null) {
+        res.status(404).json({
+            status: 404,
+            error: "Post not found",
+            data: [],
+        });
+    } else {
+        res.status(200).json({
+            status: 200,
+            statusText: "OK",
+            data: data.data,
+        });
+    }
+});
 
 app.post("/signUpUserInfo", async function (req, res) {
     var username = req.body["username"];
@@ -172,17 +170,17 @@ app.get("/getUserPosts/:username", async function (req, res) {
     var username = req.params["username"];
 
     const data = await supa.supaClient
-      .from("users123")
-      .select("user_id")
-      .eq("username", username);
+        .from("users123")
+        .select("user_id")
+        .eq("username", username);
 
     if (data.data.length === 0) {
-      res.status(404).json({
-        status: 404,
-        error: "Resource not found",
-        data: [],
-      });
-      return;
+        res.status(404).json({
+            status: 404,
+            error: "Resource not found",
+            data: [],
+        });
+        return;
     }
 
     var userId = data["data"][0]["user_id"];
@@ -192,16 +190,16 @@ app.get("/getUserPosts/:username", async function (req, res) {
         .select()
         .eq("user_id", userId);
     if (posts.data.length === 0) {
-      res.status(400).json({
-        status: 400,
-        statusText: "No posts yet"
-      })
+        res.status(400).json({
+            status: 400,
+            statusText: "No posts yet",
+        });
     } else {
-      res.status(200).json({
-        status: 200,
-        statusText: "OK",
-        data: posts.data,
-      });
+        res.status(200).json({
+            status: 200,
+            statusText: "OK",
+            data: posts.data,
+        });
     }
 });
 
@@ -277,6 +275,28 @@ app.get("/getFollowerList/:username", async function (req, res) {
     }
 
     res.send(arr);
+});
+
+app.get("/getFollowingList/:userID", async function (req, res) {
+    var userID = req.params["userID"];
+
+    const followerList = await supa.supaClient
+        .from("followers")
+        .select("following_id")
+        .eq("follower_id", userID);
+
+    res.send(followerList);
+});
+
+app.get("/getMessages/:userID", async function (req, res) {
+    var userID = req.params["userID"];
+
+    const messageList = await supa.supaClient
+        .from("direct_messages")
+        .select("*")
+        .or(`sendingUserId.eq.${userID},recievingUserId.eq.${userID}`);
+
+    res.send(messageList);
 });
 
 app.listen(port, () => {
