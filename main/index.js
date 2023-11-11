@@ -1,14 +1,45 @@
 const express = require("express");
-const utils = require("../other/utils");
 const supa = require("../other/database.js");
 const cors = require("cors");
-
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-
 const port = 3000;
+
+var http = require("http").Server(app);
+
+const io = require("socket.io")(http, {
+    cors: {
+        origin: "http://localhost:5173",
+        credentials: true,
+    },
+    transports: ["websocket", "polling"],
+});
+
+io.on("connection", (socket) => {
+    console.log(`connect ${socket.id}`);
+
+    socket.on("openListen", (arg) => {
+        socket.on(arg, async ({ sendId, msg }) => {
+            console.log(sendId, msg);
+            const { error } = await supa.supaClient
+                .from("direct_messages")
+                .insert({
+                    sendingUserId: arg,
+                    recievingUserId: sendId,
+                    message: msg,
+                });
+            console.log(error);
+
+            io.emit(sendId, { sendId: arg, msg: msg });
+        });
+    });
+
+    socket.on("disconnect", (reason) => {
+        console.log(`disconnect ${socket.id} due to ${reason}`);
+    });
+});
 
 app.get("/getUserInfo/:username", async function (req, res) {
     var username = req.params["username"];
@@ -294,11 +325,12 @@ app.get("/getMessages/:userID", async function (req, res) {
     const messageList = await supa.supaClient
         .from("direct_messages")
         .select("*")
-        .or(`sendingUserId.eq.${userID},recievingUserId.eq.${userID}`);
+        .or(`sendingUserId.eq.${userID},recievingUserId.eq.${userID}`)
+        .order("id", { ascending: true });
 
     res.send(messageList);
 });
 
-app.listen(port, () => {
-    console.log(`Listing to port ${port}`);
+http.listen(port, function () {
+    console.log("listening on :" + port);
 });
