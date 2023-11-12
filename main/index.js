@@ -237,6 +237,86 @@ app.get("/getTotalFollowers/:username", async function (req, res) {
     });
 });
 
+app.delete("/deleteUser/:userId", async function (req, res) {
+    const userId = req.params["userId"];
+
+    try {
+        // Delete from followers
+        await supa.supaClient
+            .from('followers')
+            .delete()
+            .eq('follower_id', userId)
+
+        await supa.supaClient
+            .from('followers')
+            .delete()
+            .eq('following_id', userId)
+
+        await supa.supaClient
+            .from('direct_messages')
+            .delete()
+            .eq('sendingUserId', userId)
+        
+        await supa.supaClient
+            .from('direct_messages')
+            .delete()
+            .eq('recievingUserId', userId)
+
+        await supa.supaClient
+            .from('comments_test')
+            .delete()
+            .eq('user_id', userId)
+
+            // Delete from posts
+        await supa.supaClient
+            .from('posts')
+            .delete()
+            .eq('user_id', userId);
+
+        await supa.supaClient
+            .from('user_likes')
+            .delete()
+            .eq('user_id', userId)
+
+        // Delete from likes
+        const posts = await supa.supaClient
+            .from('user_likes')
+            .select('post_id')
+            .eq('user_id', userId) 
+
+        for (let i = 0; i < posts.data.length; i++) {
+            const postId = posts.data[i].post_id;
+        
+            // Retrieve the current like_count
+            const currentLikeCount = await supa.supaClient
+                .from('likes')
+                .select('like_count')
+                .eq('post_id', postId)
+                .single()
+
+          // Update the like_count by decrementing it
+            await supa.supaClient
+                .from('likes')
+                .update({ like_count: currentLikeCount.data.like_count - 1 })
+                .eq('post_id', postId);
+        }
+		
+        // Delete from users123
+        await supa.supaClient
+          .from('users123')
+          .delete()
+          .eq('user_id', userId);
+
+      // Delete user from authentication
+        const { data } = await supa.supaClient.auth.admin.deleteUser(userId);
+
+        res.status(200).json({ success: true, message: 'User deleted successfully' });
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
 app.get("/getFollowerList/:username", async function (req, res) {
     var username = req.params["username"];
 
