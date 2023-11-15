@@ -41,6 +41,10 @@ io.on("connection", (socket) => {
     });
 });
 
+app.get("/", (req, res) => {
+  res.send("Snapshare API is running 🎉")
+})
+
 app.get("/getUserInfo/:username", async function (req, res) {
     var username = req.params["username"];
 
