@@ -91,6 +91,50 @@ app.get("/getUsername/:userId", async function (req, res) {
     }
 });
 
+app.get("/getUsernameInfo/:userId", async function (req, res) {
+    const userId = req.params["userId"]
+    const data = await supa.supaClient
+        .from("users123")
+        .select()
+        .eq("user_id", userId);
+
+    if (data === null || data.data.length === 0) {
+        res.status(404).json({
+            status: 404,
+            error: "User not found",
+            data: [],
+        });
+    } else {
+        res.status(200).json({
+            status: 200,
+            statusText: "OK",
+            data: data.data,
+        });
+    }
+})
+
+app.get("/getComments/:postId", async function (req, res) {
+    const postId = req.params["postId"]
+    const data = await supa.supaClient
+        .from("comments_test")
+        .select()
+        .eq("post_id", postId)
+    
+    if (data.data === null || data === null) {
+        res.status(400).json({
+            status: 400,
+            error: "Comments not found",
+            data: [],
+        });
+    } else {
+        res.status(200).json({
+            status: 200,
+            statusText: "OK",
+            data: data.data,
+        });
+    }
+})
+
 app.get("/getAllPosts", async function (req, res) {
     const data = await supa.supaClient.from("posts").select("*");
 
@@ -223,7 +267,8 @@ app.get("/getUserPosts/:username", async function (req, res) {
     const posts = await supa.supaClient
         .from("posts")
         .select()
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
     if (posts.data.length === 0) {
         res.status(400).json({
             status: 400,
