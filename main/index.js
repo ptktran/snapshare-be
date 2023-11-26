@@ -602,10 +602,10 @@ const sendEmailNotification = async (sendingUserId, recievingUserId, message, em
 
         console.log("Email notification status:", emailNotificationStatus);
 
-        if (!emailNotificationStatus) {
-            console.log("Email notifications are disabled.");
-            return;
-        }
+        //if (!emailNotificationStatus) {
+        //    console.log("Email notifications are disabled.");
+        //    return;
+        //}
 
         
 
