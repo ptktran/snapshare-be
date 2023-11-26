@@ -1,6 +1,7 @@
 const express = require("express");
 const supa = require("../other/database.js");
 const cors = require("cors");
+const nodemailer = require("nodemailer");
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -40,6 +41,46 @@ io.on("connection", (socket) => {
         console.log(`disconnect ${socket.id} due to ${reason}`);
     });
 });
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        //user: 'ssnapshare@zohocloud.ca',
+       user: 'ssnapshare@gmail.com', // gmail 
+
+       pass: 'ptkb kntf xpma vqqn'// app password
+        //pass: 'CPS7142023' // Your Gmail password
+    }
+});
+
+app.post('/sendEmail', async (req, res) => {
+    const { username, email, message, message2, subject} = req.body;
+    const htmlContent = `
+    <html>
+      <div>
+          <p><strong>${username}</strong> ${message}\n</p>
+          <p>${message2}\n</p>
+          <a href="https://snapshare-cgg.vercel.app/">https://snapshare-cgg.vercel.app/</a>
+      </div>
+    </html>
+  `;
+
+  const mailOptions = {
+    from: "ssnapshare@gmail.com",
+    to: email,
+    subject: subject,
+    html: htmlContent,
+  };
+  
+    // Add email sending logic here
+    try {
+      await transporter.sendMail(mailOptions);
+      res.status(200).json({ success: true, message: 'Email sent successfully' });
+  } catch (error) {
+        console.error("Error sending email:", error);
+        res.status(500).json({ success: false, message: 'Email not sent' });
+  }
+  });
 
 app.get("/", (req, res) => {
   res.send("Snapshare API is running 🎉")
@@ -331,6 +372,16 @@ app.delete("/deleteUser/:userId", async function (req, res) {
             .from('followers')
             .delete()
             .eq('following_id', userId)
+        
+        await supa.supaClient
+            .from('notification')
+            .delete()
+            .eq('user_id', userId)
+        
+        await supa.supaClient
+            .from('notification')
+            .delete()
+            .eq('interacter_id', userId)
 
         await supa.supaClient
             .from('direct_messages')
