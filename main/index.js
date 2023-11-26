@@ -1,14 +1,15 @@
 const express = require("express");
 const supa = require("../other/database.js");
 const cors = require("cors");
+const nodemailer = require("nodemailer");
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 const port = 3000;
 
-var http = require("http").Server(app);
 
+var http = require("http").Server(app);
 const io = require("socket.io")(http, {
     cors: {
         origin: "http://localhost:5173",
@@ -17,9 +18,35 @@ const io = require("socket.io")(http, {
     transports: ["websocket", "polling"],
 });
 
+
+////////////////////////////////////////////////////
+
+
+
+
+// Nodemailer setup
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+
+
+
+
+        //user: 'ssnapshare@zohocloud.ca',
+       user: 'ssnapshare@gmail.com', // gmail
+
+
+
+
+       pass: 'ptkb kntf xpma vqqn'// app password
+        //pass: 'CPS7142023' // Your Gmail password
+    }
+});
+///////////////////////////////////////////////////
+
+
 io.on("connection", (socket) => {
     console.log(`connect ${socket.id}`);
-
     socket.on("openListen", (arg) => {
         socket.on(arg, async ({ sendId, msg }) => {
             console.log(sendId, msg);
@@ -32,6 +59,10 @@ io.on("connection", (socket) => {
                 });
             console.log(error);
 
+
+         
+            await sendEmailNotification(arg, sendId, msg);
+        
             io.emit(sendId, { sendId: arg, msg: msg });
         });
     });
@@ -47,7 +78,6 @@ app.get("/", (req, res) => {
 
 app.get("/getUserInfo/:username", async function (req, res) {
     var username = req.params["username"];
-
     const data = await supa.supaClient
         .from("users123")
         .select()
@@ -415,6 +445,217 @@ app.get("/getMessages/:userID", async function (req, res) {
     res.send(messageList);
 });
 
+/////////////////////////////////////////////////////////////////////////
+app.put("/updateEmailNotificationStatus/:userId", async function (req, res) {
+    const userId = req.params["userId"];
+    const newStatus = req.body["email_notification_status"];
+
+    try {
+        const { data, error } = await supa.supaClient
+            .from("direct_message_email")
+            .update({ email_notification_status: newStatus })
+            .eq("recipient_user_id", userId);
+
+        if (error) {
+            res.status(500).json({ success: false, message: 'Internal server error' });
+        } else {
+            res.status(200).json({ success: true, message: 'Email notification status updated successfully' });
+        }
+    } catch (error) {
+        console.error("Error updating email notification status:", error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+///////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+
+const lastEmailSentTimestamps = new Map();
+const sendEmailNotification = async (sendingUserId, recievingUserId, message, emailNotificationStatus) => {
+    try {
+
+       // console.log("Sending email noti");
+
+       // console.log("Sending id", sendingUserId);
+
+        //read notification status for receiving user id in direct message email table to check to send email
+        const { data: emailData, error: emailError } = await supa.supaClient
+        .from("direct_message_email")
+        .select("email_notification_status")
+        .eq("recipient_user_id", recievingUserId)
+        .limit(1) 
+        .single();
+
+
+        const emailNotificationStatus = emailData?.email_notification_status;
+
+        console.log("Email notification status:", emailNotificationStatus);
+
+        if (!emailNotificationStatus) {
+            console.log("Email notifications are disabled.");
+            return;
+        }
+
+        
+
+        const currentTime = new Date();
+        const lastEmailSentForUser = lastEmailSentTimestamps.get(recievingUserId);
+
+
+        /// If it has been less than 5 minutes since last email dont send it
+        //Can comment out the if statement if you dont want to use
+        if (lastEmailSentForUser && currentTime - lastEmailSentForUser < 5 * 60 * 1000) {
+            console.log("Less than 5 minutes since the last email for user");
+            return;
+        }
+
+    
+        lastEmailSentTimestamps.set(recievingUserId, currentTime);
+       
+        const senderUserData = await supa.supaClient
+            .from("users123")
+            .select("username", "email")
+            .eq("user_id", (sendingUserId))
+            .single();
+
+
+       
+            if (!senderUserData) {
+                console.error("", sendingUserId);
+                return;
+            }
+   
+
+
+        const senderUsername = senderUserData.data.username;
+        const senderEmail = senderUserData.email;
+
+
+        //console.log("Sender username", senderUsername);
+
+
+        const recipientUserData = await supa.supaClient
+            .from("users123")
+            .select("username","email")
+            .eq("user_id", (recievingUserId))
+            .single();
+
+
+           // console.log("Recipient data:", recipientUserData);
+
+
+           // console.log("Recipient username:",recipientUserData.data);
+
+
+
+
+            if (!recipientUserData) {
+                console.error("Not found: ", recievingUserId);
+                return;
+            }
+                   const recipientUsername = recipientUserData.data;
+                    const recipientEmailData = await supa.supaClient
+                    .from("users123")
+                    .select("email")
+                    .eq("username", recipientUsername.username)
+                    .single()
+
+
+
+                   // console.log("DB Query", recipientEmailData);
+
+                    if (!recipientEmailData) {
+                    console.log("Email data error: ", recipientUsername);
+                    return;
+                    }
+                    const recipientEmail = recipientEmailData.data.email;
+
+
+                console.log("Recipient Email:", recipientEmail);
+                console.log("Recipient Username:", recipientUsername.username);
+                console.log("Sender Username:", senderUsername);
+                console.log("Message:", message);
+
+
+       // Email options
+        const mailOptions = {
+            from: 'ssnapshare@gmail.com',
+           
+             to: recipientEmail,
+            subject: 'New Private Message',
+            html: `
+            <p>Hello ${recipientUsername.username},</p>
+   
+            <p>You have a new private message from ${senderUsername}:</p>
+   
+            <p>${message}</p>
+   
+            <p>Regards,<br>
+            SnapShare Team</p>
+   
+            <img src="cid:snapshare" alt="SnapShare Photo">
+        `,
+        attachments: [
+            {
+                filename: 'snap.jpg',
+                path: __dirname+ '/snap.jpg',
+                cid: 'snapshare',
+            },]
+        };
+
+
+        
+
+
+        // Send email
+        transporter.sendMail(mailOptions, async (error, info) => {
+            if (error) {
+                console.error("Error sending email:", error);
+            } else {
+
+
+                console.log("Email sent: " + info.response);
+
+            //update timestamp for specific user
+            lastEmailSentTimestamps.set(recievingUserId, new Date());
+
+                const notificationInsertResult = await supa.supaClient
+            .from("notification")
+            .insert({
+                created_at: new Date(),
+                user_id: recievingUserId,
+                interacter_id: sendingUserId,
+                profile_link: recipientUsername.username, 
+                post_link: null, 
+                interaction_type: 'direct message',
+                user_username: recipientUsername.username,
+                interacter_username: senderUsername,
+            });
+
+        //console.log("notification inserted: ", notificationInsertResult);
+        
+                
+                const emailInsertResult = await supa.supaClient
+                    .from("direct_message_email")
+                    .insert({
+                        sender_user_id: sendingUserId,
+                        recipient_user_id: recievingUserId,
+                        message: message,
+                        sent_at: new Date(),
+                        email_subject: 'New Private Message',
+                        email_body: mailOptions.text
+                    });
+              //console.log("Email inserted: ", emailInsertResult);
+             }
+       });
+    } catch (error) {
+        console.error("Error", error);
+    }
+};
+
+///////////////////////////////////////////////////////////////////////////////////////
+
 http.listen(port, function () {
     console.log("listening on :" + port);
 });
+
