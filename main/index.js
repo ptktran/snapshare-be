@@ -2,7 +2,6 @@ const express = require("express");
 const nodemailer = require("nodemailer");
 const supa = require("../other/database.js");
 const cors = require("cors");
-const nodemailer = require("nodemailer");
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -57,17 +56,6 @@ io.on("connection", (socket) => {
     socket.on("disconnect", (reason) => {
         console.log(`disconnect ${socket.id} due to ${reason}`);
     });
-});
-
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        //user: 'ssnapshare@zohocloud.ca',
-       user: 'ssnapshare@gmail.com', // gmail 
-
-       pass: 'ptkb kntf xpma vqqn'// app password
-        //pass: 'CPS7142023' // Your Gmail password
-    }
 });
 
 app.post('/sendEmail', async (req, res) => {
