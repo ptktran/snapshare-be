@@ -1,4 +1,5 @@
 const express = require("express");
+const nodemailer = require("nodemailer");
 const supa = require("../other/database.js");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
@@ -11,33 +12,19 @@ const port = 3000;
 
 var http = require("http").Server(app);
 const io = require("socket.io")(http, {
-    cors: {
+    cors: {    
         origin: "http://localhost:5173",
         credentials: true,
     },
     transports: ["websocket", "polling"],
 });
 
-
-////////////////////////////////////////////////////
-
-
-
-
 // Nodemailer setup
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-
-
-
-
         //user: 'ssnapshare@zohocloud.ca',
        user: 'ssnapshare@gmail.com', // gmail
-
-
-
-
        pass: 'ptkb kntf xpma vqqn'// app password
         //pass: 'CPS7142023' // Your Gmail password
     }
@@ -160,50 +147,6 @@ app.get("/getUsername/:userId", async function (req, res) {
         });
     }
 });
-
-app.get("/getUsernameInfo/:userId", async function (req, res) {
-    const userId = req.params["userId"]
-    const data = await supa.supaClient
-        .from("users123")
-        .select()
-        .eq("user_id", userId);
-
-    if (data === null || data.data.length === 0) {
-        res.status(404).json({
-            status: 404,
-            error: "User not found",
-            data: [],
-        });
-    } else {
-        res.status(200).json({
-            status: 200,
-            statusText: "OK",
-            data: data.data,
-        });
-    }
-})
-
-app.get("/getComments/:postId", async function (req, res) {
-    const postId = req.params["postId"]
-    const data = await supa.supaClient
-        .from("comments_test")
-        .select()
-        .eq("post_id", postId)
-    
-    if (data.data === null || data === null) {
-        res.status(400).json({
-            status: 400,
-            error: "Comments not found",
-            data: [],
-        });
-    } else {
-        res.status(200).json({
-            status: 200,
-            statusText: "OK",
-            data: data.data,
-        });
-    }
-})
 
 app.get("/getAllPosts", async function (req, res) {
     const data = await supa.supaClient.from("posts").select("*");
@@ -337,8 +280,7 @@ app.get("/getUserPosts/:username", async function (req, res) {
     const posts = await supa.supaClient
         .from("posts")
         .select()
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false });
+        .eq("user_id", userId);
     if (posts.data.length === 0) {
         res.status(400).json({
             status: 400,
@@ -540,7 +482,52 @@ app.get("/getMessages/:userID", async function (req, res) {
     res.send(messageList);
 });
 
-/////////////////////////////////////////////////////////////////////////
+
+
+function sendEmail({ email, subject, rating, message}){
+    return new Promise((resolve, reject) => {
+        var transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth:{
+                user:'ssnapshare@gmail.com',
+                pass:'ptkb kntf xpma vqqn',
+            },
+        });
+
+        const mail_configs = {
+            from: 'ssnapshare@gmail.com',
+            to: email,
+            subject: `Feedback Form`,
+            text: `Subject: ${subject}\nRating: ${rating}\nMessage: ${message}`,
+        };
+        transporter.sendMail(mail_configs, function (error, info){
+            if (error){
+                console.log(error);
+                return reject({ message: `An error has occured` });
+            }
+            return resolve({ message: "Feedback sent successfully!"});
+        });
+    });
+}
+
+/*app.get("/", (req, res) => {
+    sendEmail()
+    .then((response) => res.send(response.message))
+    .catch((error) => res.status(500).send(error.message));
+});
+*/
+
+app.post("/send_email", (req, res) => {
+  
+    //console.log('Request Body: ', req.body);
+
+     sendEmail(req.body)
+    .then((response) => res.send(response.message))
+    .catch((error) => res.status(500).send(error.message));
+
+}); 
+
+
 app.put("/updateEmailNotificationStatus/:userId", async function (req, res) {
     const userId = req.params["userId"];
     const newStatus = req.body["email_notification_status"];
@@ -561,9 +548,6 @@ app.put("/updateEmailNotificationStatus/:userId", async function (req, res) {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
-///////////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
 
 const lastEmailSentTimestamps = new Map();
 const sendEmailNotification = async (sendingUserId, recievingUserId, message, emailNotificationStatus) => {
@@ -698,10 +682,6 @@ const sendEmailNotification = async (sendingUserId, recievingUserId, message, em
             },]
         };
 
-
-        
-
-
         // Send email
         transporter.sendMail(mailOptions, async (error, info) => {
             if (error) {
@@ -748,9 +728,8 @@ const sendEmailNotification = async (sendingUserId, recievingUserId, message, em
     }
 };
 
-///////////////////////////////////////////////////////////////////////////////////////
+
 
 http.listen(port, function () {
     console.log("listening on :" + port);
 });
-
