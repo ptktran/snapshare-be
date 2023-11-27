@@ -312,8 +312,8 @@ app.get("/getUserPosts/:username", async function (req, res) {
         .from("posts")
         .select()
         .eq("user_id", userId)
-        .order('id', { ascending: false });
-    if (posts.data.length === 0 || posts.data === null) {
+        .order("created_at", { ascending: false });
+    if (posts.data.length === 0) {
         res.status(400).json({
             status: 400,
             statusText: "No posts yet",
