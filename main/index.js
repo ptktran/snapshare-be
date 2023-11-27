@@ -69,12 +69,12 @@ app.post('/sendEmail', async (req, res) => {
     </html>
   `;
 
-  const mailOptions = {
-    from: "ssnapshare@gmail.com",
-    to: email,
-    subject: subject,
-    html: htmlContent,
-  };
+    const mailOptions = {
+      from: "ssnapshare@gmail.com",
+      to: email,
+      subject: subject,
+      html: htmlContent,
+    };
   
     // Add email sending logic here
     try {
@@ -311,8 +311,9 @@ app.get("/getUserPosts/:username", async function (req, res) {
     const posts = await supa.supaClient
         .from("posts")
         .select()
-        .eq("user_id", userId);
-    if (posts.data.length === 0) {
+        .eq("user_id", userId)
+        .order('id', { ascending: false });
+    if (posts.data.length === 0 || posts.data === null) {
         res.status(400).json({
             status: 400,
             statusText: "No posts yet",
@@ -526,8 +527,8 @@ function sendEmail({ email, subject, rating, message}){
         });
 
         const mail_configs = {
-            from: 'ssnapshare@gmail.com',
-            to: email,
+            from: email,
+            to: 'ssnapshare@gmail.com',
             subject: `Feedback Form`,
             text: `Subject: ${subject}\nRating: ${rating}\nMessage: ${message}`,
         };
