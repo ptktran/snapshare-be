@@ -65,7 +65,6 @@ app.post('/sendEmail', async (req, res) => {
       <div>
           <p><strong>${username}</strong> ${message}\n</p>
           <p>${message2}\n</p>
-          <a href="https://snapshare-cgg.vercel.app/">https://snapshare-cgg.vercel.app/</a>
       </div>
     </html>
   `;
